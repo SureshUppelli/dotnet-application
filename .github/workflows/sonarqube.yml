@@ -1,0 +1,24 @@
+name: SonarQube
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Restore NuGet packages
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release
+      - name: SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner begin /k:"MyProjectKey" /d:sonar.host.url="http://my-sonarqube-server" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" && dotnet build --configuration Release && dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
